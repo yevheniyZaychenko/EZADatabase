@@ -30,7 +30,9 @@ TODO: Add long description of the pod here.
 
   s.ios.deployment_target = '9.0'
 
+  s.source_files = 'EZADatabase/Classes//**/*.{h,m,swift}'
   s.source_files = 'EZADatabase/Classes/**/*'
+  s.resources = 'EZADatabase/Classes/Storage/CoreDataManagement/CoreDataStorage/LocalStorageDataModel.xcdatamodeld'
   
   # s.resource_bundles = {
   #   'EZADatabase' => ['EZADatabase/Assets/*.png']
