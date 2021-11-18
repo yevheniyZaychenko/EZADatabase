@@ -1,0 +1,6 @@
+framework module EZADatabase {
+  umbrella header "EZADatabase-umbrella.h"
+
+  export *
+  module * { export * }
+}

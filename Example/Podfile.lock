@@ -1,0 +1,16 @@
+PODS:
+  - EZADatabase (0.1.0)
+
+DEPENDENCIES:
+  - EZADatabase (from `../`)
+
+EXTERNAL SOURCES:
+  EZADatabase:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  EZADatabase: 51b3b04b28388913765dc637cd382c16215ec932
+
+PODFILE CHECKSUM: a2a211db7092aad0870216784306e1c9309ad6b9
+
+COCOAPODS: 1.11.2
