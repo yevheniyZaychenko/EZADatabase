@@ -11,7 +11,7 @@
 import Foundation
 import CoreData
 
-protocol CoreDataCompatible {
+public protocol CoreDataCompatible {
     
     associatedtype ManagedType: CoreDataExportable
     
@@ -31,7 +31,7 @@ protocol CoreDataCompatible {
 }
 
 
-protocol CoreDataExportable: NSManagedObject {
+public protocol CoreDataExportable: NSManagedObject {
     
     associatedtype ExportType: CoreDataCompatible
     

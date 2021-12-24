@@ -11,14 +11,14 @@
 import Foundation
 import PromiseKit
 
-enum DatabaseReaderComputationOperation: String {
+public enum DatabaseReaderComputationOperation: String {
     
     case min = "min:"
     case max = "max:"
     case average = "average:"
 }
 
-protocol DatabaseReaderProtocol {
+public protocol DatabaseReaderProtocol {
     
     associatedtype ReadType: Codable
     
@@ -63,21 +63,21 @@ protocol DatabaseReaderProtocol {
                                        fetchLimit: Int?) -> FetchedResultsProviderInterface
 }
 
-extension DatabaseReaderProtocol {
+public extension DatabaseReaderProtocol {
     
-    static func exportRemoteSingle(predicate: NSPredicate?, sort: [NSSortDescriptor]? = nil) -> ReadType? {
+    public static func exportRemoteSingle(predicate: NSPredicate?, sort: [NSSortDescriptor]? = nil) -> ReadType? {
         return exportRemoteSingle(predicate: predicate, sort: sort)
     }
     
-    static func exportRemote(_ type: ReadType.Type, predicate: NSPredicate?, sort: [NSSortDescriptor]? = nil) -> Promise<ReadType?> {
+    public static func exportRemote(_ type: ReadType.Type, predicate: NSPredicate?, sort: [NSSortDescriptor]? = nil) -> Promise<ReadType?> {
         return exportRemote(type, predicate: predicate, sort: sort)
     }
 }
 
 
-class AppDatabaseExporter<ExportedType: Codable> {}
+public class AppDatabaseExporter<ExportedType: Codable> {}
 
-extension AppDatabaseExporter: DatabaseReaderProtocol where ExportedType: CoreDataCompatible {
+public extension AppDatabaseExporter: DatabaseReaderProtocol where ExportedType: CoreDataCompatible {
     
     typealias Reader = CoreDataReader
     typealias ReadType = ExportedType

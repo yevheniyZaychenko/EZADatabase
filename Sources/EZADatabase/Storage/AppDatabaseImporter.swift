@@ -11,7 +11,7 @@
 import Foundation
 import PromiseKit
 
-protocol DatabaseWriterProtocol {
+public protocol DatabaseWriterProtocol {
     
     associatedtype WriteType: Codable
     
@@ -36,9 +36,9 @@ protocol DatabaseWriterProtocol {
 }
 
 
-class AppDatabaseImporter<ImportedType: Codable> {}
+public class AppDatabaseImporter<ImportedType: Codable> {}
 
-extension AppDatabaseImporter: DatabaseWriterProtocol where ImportedType: CoreDataCompatible {
+public extension AppDatabaseImporter: DatabaseWriterProtocol where ImportedType: CoreDataCompatible {
     
     typealias Writer = CoreDataWriter
     typealias WriteType = ImportedType
