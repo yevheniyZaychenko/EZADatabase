@@ -1,6 +1,0 @@
-use_frameworks!
-target 'EZADatabase_Tests' do
-  pod 'EZADatabase', :path => '../'
-  
-  
-end

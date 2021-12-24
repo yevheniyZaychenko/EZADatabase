@@ -26,6 +26,8 @@ class CoreDataStorageController: NSObject {
         return CoreDataStorageController(completionClosure: nil)
     }()
     
+    private static var modelName: String = ""
+    
     //Private Properties
     //
     private var persistentContainer: NSPersistentContainer!
@@ -37,6 +39,10 @@ class CoreDataStorageController: NSObject {
         return persistentContainer.viewContext
     }
     
+    static func configure(modelName: String) {
+        Self.modelName = modelName
+    }
+    
     init(completionClosure: (() -> Void)?) {
         
         super.init()
@@ -45,7 +51,7 @@ class CoreDataStorageController: NSObject {
     
     func loadStore(completionClosure: (() -> Void)?) {
         
-        persistentContainer = FrameworkPersistentContainer(name: "ModelAltos")
+        persistentContainer = FrameworkPersistentContainer(name: Self.modelName)
         persistentContainer.loadPersistentStores() { (description, error) in
             if let error = error {
                 Crashlytics.crashlytics().record(error: error)
