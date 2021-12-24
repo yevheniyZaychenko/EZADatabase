@@ -38,18 +38,18 @@ public protocol DatabaseWriterProtocol {
 
 public class AppDatabaseImporter<ImportedType: Codable> {}
 
-public extension AppDatabaseImporter: DatabaseWriterProtocol where ImportedType: CoreDataCompatible {
+extension AppDatabaseImporter: DatabaseWriterProtocol where ImportedType: CoreDataCompatible {
     
     typealias Writer = CoreDataWriter
-    typealias WriteType = ImportedType
+    public typealias WriteType = ImportedType
     
     @discardableResult
-    static func deleteEntities(_ entity: WriteType.Type, predicate: NSPredicate?) -> Promise<Void> {
+    public static func deleteEntities(_ entity: WriteType.Type, predicate: NSPredicate?) -> Promise<Void> {
         return Writer<WriteType>.deleteEntities(entity, predicate: predicate)
     }
     
     @discardableResult
-    static func importRemoteList(_ objectsToImport: [WriteType]) -> Promise<Void> {
+    public static func importRemoteList(_ objectsToImport: [WriteType]) -> Promise<Void> {
         return Writer<WriteType>.importRemoteList(objectsToImport)
     }
 }

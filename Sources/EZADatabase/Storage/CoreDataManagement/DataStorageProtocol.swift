@@ -50,7 +50,7 @@ public protocol CoreDataExportable: NSManagedObject {
 
 // Data storage common methods
 //
-protocol CoreDataStorageInterface {
+public protocol CoreDataStorageInterface {
     
     /// Fetches an objects or crates it if such doesn't exist and 'object' is passed
     /// This method should be called inside "saveBlock" of "save" method

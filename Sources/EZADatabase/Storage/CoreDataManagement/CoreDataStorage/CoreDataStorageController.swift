@@ -10,7 +10,6 @@
 
 import Foundation
 import CoreData
-import FirebaseCrashlytics
 
 class FrameworkPersistentContainer: NSPersistentContainer {}
 
@@ -54,7 +53,6 @@ class CoreDataStorageController: NSObject {
         persistentContainer = FrameworkPersistentContainer(name: Self.modelName)
         persistentContainer.loadPersistentStores() { (description, error) in
             if let error = error {
-                Crashlytics.crashlytics().record(error: error)
                 print("Failed to load Core Data stack: \(error)")
             }
             completionClosure?()
@@ -220,7 +218,6 @@ private extension NSManagedObjectContext {
             return try fetch(request)
         }
         catch {
-            Crashlytics.crashlytics().record(error: error)
             return nil
         }
     }
@@ -241,7 +238,6 @@ private extension NSManagedObjectContext {
         do {
             try save()
         } catch {
-            Crashlytics.crashlytics().record(error: error)
             fatalError("Error  saving context: \(error)")
         }
     }
