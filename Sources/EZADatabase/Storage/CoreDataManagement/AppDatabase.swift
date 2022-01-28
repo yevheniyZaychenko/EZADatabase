@@ -15,11 +15,10 @@ import CoreData
 /// A type responsible for initializing the application's database
 public struct AppDatabase {
 
-    public static func openDatabase(in application: UIApplication, modelName: String) {
+    public static func openDatabase(in application: UIApplication) {
         
         //Initialize core data stack
         //
-        CoreDataStorageController.configure(modelName: modelName)
         _ = CoreDataStorageController.shared
     }
 }

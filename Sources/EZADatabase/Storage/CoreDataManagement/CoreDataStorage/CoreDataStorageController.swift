@@ -10,6 +10,7 @@
 
 import Foundation
 import CoreData
+import FirebaseCrashlytics
 
 class FrameworkPersistentContainer: NSPersistentContainer {}
 
@@ -19,13 +20,13 @@ private extension DispatchQueue {
 
 class CoreDataStorageController: NSObject {
     
+    private static let kEZADatabaseModelName = "EZADatabaseModelName";
+    
     //Static Properties
     //
     static var shared: CoreDataStorageInterface = {
         return CoreDataStorageController(completionClosure: nil)
     }()
-    
-    private static var modelName: String = ""
     
     //Private Properties
     //
@@ -38,10 +39,6 @@ class CoreDataStorageController: NSObject {
         return persistentContainer.viewContext
     }
     
-    static func configure(modelName: String) {
-        Self.modelName = modelName
-    }
-    
     init(completionClosure: (() -> Void)?) {
         
         super.init()
@@ -50,9 +47,14 @@ class CoreDataStorageController: NSObject {
     
     func loadStore(completionClosure: (() -> Void)?) {
         
-        persistentContainer = FrameworkPersistentContainer(name: Self.modelName)
+        guard let containerName = Bundle.main.infoDictionary[kEZADatabaseModelName] as? String else {
+            fatalError("EZADatabaseModelName should be specified in Info.plist. Make sure it's equal to .xcdatamodel file name")
+        }
+        
+        persistentContainer = FrameworkPersistentContainer(name: containerName)
         persistentContainer.loadPersistentStores() { (description, error) in
             if let error = error {
+                Crashlytics.crashlytics().record(error: error)
                 print("Failed to load Core Data stack: \(error)")
             }
             completionClosure?()
@@ -185,7 +187,7 @@ private extension CoreDataStorageController {
         
         let type = Type.ManagedType.self
         let entityName = String(describing: type)
-        let result = query(type: type, predicate: predicate, context: viewContext, fetchLimit: 1)?.first ??
+        let result = query(type: type, predicate: predicate, context: context, fetchLimit: 1)?.first ??
                      NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? Type.ManagedType
         result?.configure(with: object as! Type.ManagedType.ExportType, in: self)
     }
@@ -218,6 +220,7 @@ private extension NSManagedObjectContext {
             return try fetch(request)
         }
         catch {
+            Crashlytics.crashlytics().record(error: error)
             return nil
         }
     }
@@ -238,6 +241,7 @@ private extension NSManagedObjectContext {
         do {
             try save()
         } catch {
+            Crashlytics.crashlytics().record(error: error)
             fatalError("Error  saving context: \(error)")
         }
     }
