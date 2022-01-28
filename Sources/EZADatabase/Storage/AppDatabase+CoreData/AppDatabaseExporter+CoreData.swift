@@ -12,7 +12,7 @@ import Foundation
 import CoreData
 import PromiseKit
 
-class CoreDataReader<ExportedType: Codable> { }
+class CoreDataReader<ExportedType> { }
 
 extension CoreDataReader: DatabaseReaderProtocol where ExportedType: CoreDataCompatible {
     

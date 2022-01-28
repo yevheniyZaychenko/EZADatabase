@@ -11,7 +11,7 @@
 import Foundation
 import CoreData
 
-protocol CoreDataCompatible {
+public protocol CoreDataCompatible {
     
     associatedtype ManagedType: CoreDataExportable
     
@@ -31,7 +31,7 @@ protocol CoreDataCompatible {
 }
 
 
-protocol CoreDataExportable: NSManagedObject {
+public protocol CoreDataExportable: NSManagedObject {
     
     associatedtype ExportType: CoreDataCompatible
     
@@ -50,7 +50,7 @@ protocol CoreDataExportable: NSManagedObject {
 
 // Data storage common methods
 //
-protocol CoreDataStorageInterface {
+public protocol CoreDataStorageInterface {
     
     /// Fetches an objects or crates it if such doesn't exist and 'object' is passed
     /// This method should be called inside "saveBlock" of "save" method

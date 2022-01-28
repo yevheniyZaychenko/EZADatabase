@@ -11,9 +11,9 @@
 import Foundation
 import PromiseKit
 
-protocol DatabaseWriterProtocol {
+public protocol DatabaseWriterProtocol {
     
-    associatedtype WriteType: Codable
+    associatedtype WriteType
     
     /// Efficiently removes all objects by entity name from the database.
     ///
@@ -36,20 +36,18 @@ protocol DatabaseWriterProtocol {
 }
 
 
-class AppDatabaseImporter<ImportedType: Codable> {}
-
-extension AppDatabaseImporter: DatabaseWriterProtocol where ImportedType: CoreDataCompatible {
+public class AppDatabaseImporter<ImportedType: CoreDataCompatible>: DatabaseWriterProtocol {
     
+    public typealias WriteType = ImportedType
     typealias Writer = CoreDataWriter
-    typealias WriteType = ImportedType
     
     @discardableResult
-    static func deleteEntities(_ entity: WriteType.Type, predicate: NSPredicate?) -> Promise<Void> {
+    public static func deleteEntities(_ entity: WriteType.Type, predicate: NSPredicate?) -> Promise<Void> {
         return Writer<WriteType>.deleteEntities(entity, predicate: predicate)
     }
     
     @discardableResult
-    static func importRemoteList(_ objectsToImport: [WriteType]) -> Promise<Void> {
+    public static func importRemoteList(_ objectsToImport: [WriteType]) -> Promise<Void> {
         return Writer<WriteType>.importRemoteList(objectsToImport)
     }
 }

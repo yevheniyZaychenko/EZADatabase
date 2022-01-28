@@ -11,16 +11,16 @@
 import Foundation
 import PromiseKit
 
-enum DatabaseReaderComputationOperation: String {
+public enum DatabaseReaderComputationOperation: String {
     
     case min = "min:"
     case max = "max:"
     case average = "average:"
 }
 
-protocol DatabaseReaderProtocol {
+public protocol DatabaseReaderProtocol {
     
-    associatedtype ReadType: Codable
+    associatedtype ReadType
     
     /// Efficiently exports Updatable object from the database.
     ///
@@ -63,7 +63,7 @@ protocol DatabaseReaderProtocol {
                                        fetchLimit: Int?) -> FetchedResultsProviderInterface
 }
 
-extension DatabaseReaderProtocol {
+public extension DatabaseReaderProtocol {
     
     static func exportRemoteSingle(predicate: NSPredicate?, sort: [NSSortDescriptor]? = nil) -> ReadType? {
         return exportRemoteSingle(predicate: predicate, sort: sort)
@@ -75,26 +75,24 @@ extension DatabaseReaderProtocol {
 }
 
 
-class AppDatabaseExporter<ExportedType: Codable> {}
+public class AppDatabaseExporter<ExportedType: CoreDataCompatible>: DatabaseReaderProtocol {
 
-extension AppDatabaseExporter: DatabaseReaderProtocol where ExportedType: CoreDataCompatible {
-    
     typealias Reader = CoreDataReader
-    typealias ReadType = ExportedType
+    public typealias ReadType = ExportedType
     
-    static func exportRemoteSingle(predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> ReadType? {
+    public static func exportRemoteSingle(predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> ReadType? {
         return Reader<ReadType>.exportRemoteSingle(predicate: predicate, sort: sort)
     }
     
-    static func exportRemote(_ type: ReadType.Type, predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> Promise<ReadType?> {
+    public static func exportRemote(_ type: ReadType.Type, predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> Promise<ReadType?> {
         return Reader<ReadType>.exportRemote(type, predicate: predicate, sort: sort)
     }
     
-    static func exportRemoteList(_ type: ReadType.Type, predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> Promise<[ReadType]?> {
+    public static func exportRemoteList(_ type: ReadType.Type, predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> Promise<[ReadType]?> {
         return Reader<ReadType>.exportRemoteList(type, predicate: predicate, sort: sort)
     }
     
-    static func fetchedResultsProvider(_ type: ReadType.Type,
+    public static func fetchedResultsProvider(_ type: ReadType.Type,
                                        mainPredicate: NSPredicate,
                                        optionalPredicates: [NSPredicate]?,
                                        sorting sortDescriptors: [NSSortDescriptor],
@@ -109,7 +107,7 @@ extension AppDatabaseExporter: DatabaseReaderProtocol where ExportedType: CoreDa
                                                        fetchLimit: fetchLimit)
     }
     
-    static func compute(_ type: ReadType.Type, operation: DatabaseReaderComputationOperation, keyPath: String, predicate: NSPredicate) -> Int? {
+    public static func compute(_ type: ReadType.Type, operation: DatabaseReaderComputationOperation, keyPath: String, predicate: NSPredicate) -> Int? {
         return Reader<ReadType>.compute(type, operation: operation, keyPath: keyPath, predicate: predicate)
     }
 }

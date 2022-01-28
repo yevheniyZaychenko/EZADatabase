@@ -12,7 +12,7 @@ import Foundation
 import PromiseKit
 import CoreData
 
-class CoreDataWriter<ImportedType: Codable> {}
+class CoreDataWriter<ImportedType> {}
 
 extension CoreDataWriter: DatabaseWriterProtocol where ImportedType: CoreDataCompatible {
     

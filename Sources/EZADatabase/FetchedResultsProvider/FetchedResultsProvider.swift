@@ -41,10 +41,6 @@ class FetchedResultsProvider<U: CoreDataCompatible>: NSObject, NSFetchedResultsC
         reloadFetchController()
     }
     
-    deinit {
-        logger.info("\(#function) \(self)")
-    }
-    
     private func createFetchRequest() -> NSFetchRequest<U.ManagedType> {
         
         let name = String(describing: U.ManagedType.self)
@@ -91,7 +87,7 @@ class FetchedResultsProvider<U: CoreDataCompatible>: NSObject, NSFetchedResultsC
             }
             
         } catch {
-            logger.error(error)
+            print(error)
         }
     }
     

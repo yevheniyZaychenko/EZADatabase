@@ -46,7 +46,7 @@ class CoreDataStorageController: NSObject {
     
     func loadStore(completionClosure: (() -> Void)?) {
         
-        guard let containerName = Bundle.main.infoDictionary[kEZADatabaseModelName] as? String else {
+        guard let containerName = Bundle.main.infoDictionary?[Self.kEZADatabaseModelName] as? String else {
             fatalError("EZADatabaseModelName should be specified in Info.plist. Make sure it's equal to .xcdatamodel file name")
         }
         
