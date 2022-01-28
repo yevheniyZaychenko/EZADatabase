@@ -59,6 +59,15 @@ public protocol CoreDataStorageInterface {
     ///   - completion: a completion performed on context's thread
     /// - Returns: NSManagedObjectModel custom object related to Type passed in method
     ///
+    func insert<Type: CoreDataCompatible>(object: Type?) -> Type.ManagedType?
+    
+    /// Fetches an objects or crates it if such doesn't exist and 'object' is passed
+    /// This method should be called inside "saveBlock" of "save" method
+    /// - Parameters:
+    ///   - objects: A CoreDataCompatible objects list from which a new is to be created/updated
+    ///   - completion: a completion performed on context's thread
+    /// - Returns: NSManagedObjectModel custom object related to Type passed in method
+    ///
     func insertList<Type: CoreDataCompatible>(objects: [Type?], completion: @escaping () -> Void)
     
     /// Fetches a list of objects by passed NSPredicate

@@ -73,6 +73,13 @@ class CoreDataStorageController: NSObject {
 
 extension CoreDataStorageController: CoreDataStorageInterface {
     
+    func insert<Type: CoreDataCompatible>(object: Type?) -> Type.ManagedType? {
+        
+        guard let object = object else { return nil }
+        let predicate = NSPredicate(key: object.primaryKeyName, value: object.primaryKey)
+        return self.insert(object: object, predicate: predicate, context: self.backgroundContext!)
+    }
+    
     func fetchedResultsProvider<Type: CoreDataCompatible>(_ type: Type.Type,
                                                           mainPredicate: NSPredicate,
                                                           optionalPredicates: [NSPredicate]?,
@@ -182,13 +189,15 @@ private extension CoreDataStorageController {
         }
     }
     
-    func insert<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate?, context: NSManagedObjectContext) {
+    @discardableResult
+    func insert<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate?, context: NSManagedObjectContext) -> Type.ManagedType? {
         
         let type = Type.ManagedType.self
         let entityName = String(describing: type)
         let result = query(type: type, predicate: predicate, context: context, fetchLimit: 1)?.first ??
                      NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? Type.ManagedType
         result?.configure(with: object as! Type.ManagedType.ExportType, in: self)
+        return result
     }
     
     func query<Type: NSManagedObject>(type: Type.Type, predicate: NSPredicate?, context: NSManagedObjectContext, sortDescriptors: [NSSortDescriptor]? = nil, fetchLimit: Int? = nil) -> [Type]? {
