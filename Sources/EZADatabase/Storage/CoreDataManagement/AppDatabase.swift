@@ -21,4 +21,10 @@ public struct AppDatabase {
         //
         _ = CoreDataStorageController.shared
     }
+    
+    public static func deleteDatabase(keeping tablesToKeep: [NSManagedObject.Type], completion: (() -> Void)?) {
+        
+        let tablesToKeepNames = tablesToKeep.map { String(describing: $0) }
+        CoreDataStorageController.shared.deleteAllTables(except: tablesToKeepNames, completion: completion)
+    }
 }

@@ -28,11 +28,31 @@ extension CoreDataWriter: DatabaseWriterProtocol where ImportedType: CoreDataCom
         }
     }
     
-    static func importRemoteList(_ objectsToImport: [WriteType]) -> Promise<Void> {
+    static func importRemoteList(_ objectsToImport: [WriteType?]) -> Promise<Void> {
         
         return Promise<Void> { seal in
             
             CoreDataStorageController.shared.insertList(objects: objectsToImport) {
+                seal.fulfill(Void())
+            }
+        }
+    }
+    
+    static func updateRemote(_ objectToImport: WriteType?, predicate: NSPredicate?) -> Promise<Void> {
+        
+        return Promise<Void> { seal in
+            
+            CoreDataStorageController.shared.insertAsync(object: objectToImport, predicate: predicate) {
+                seal.fulfill(Void())
+            }
+        }
+    }
+    
+    static func importValues(_ entity: WriteType.Type, predicate: NSPredicate?, values:  [String: Any]) -> Promise<Void>  {
+        
+        return Promise<Void> { seal in
+            
+            CoreDataStorageController.shared.setValues(type: entity, values: values, predicate: predicate) {
                 seal.fulfill(Void())
             }
         }

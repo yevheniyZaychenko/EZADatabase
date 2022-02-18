@@ -8,7 +8,6 @@
 import Foundation
 import CoreData
 
-
 class FetchedResultsProvider<U: CoreDataCompatible>: NSObject, NSFetchedResultsControllerDelegate {
     
     private var kDefaultFetchLimit: Int = 20
@@ -41,57 +40,8 @@ class FetchedResultsProvider<U: CoreDataCompatible>: NSObject, NSFetchedResultsC
         reloadFetchController()
     }
     
-    private func createFetchRequest() -> NSFetchRequest<U.ManagedType> {
-        
-        let name = String(describing: U.ManagedType.self)
-        let fetchRequest = NSFetchRequest<U.ManagedType>(entityName: name)
-        updateFetchRequest(fetchRequest)
-        
-        return fetchRequest
-    }
     
-    private func updateFetchRequest(_ fetchRequest: NSFetchRequest<U.ManagedType>) {
-        
-        NSFetchedResultsController<U.ManagedType>.deleteCache(withName: nil)
-        
-        var predicates = optionalPredicates ?? []
-        predicates.append(mainPredicate)
-        
-        let compound = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
-        fetchRequest.predicate = compound
-        fetchRequest.sortDescriptors = sortDescriptors
-        
-        if let limit = fetchLimit {
-            fetchRequest.fetchLimit = limit
-            fetchRequest.fetchBatchSize = fetchRequest.fetchLimit
-        }
-    }
-    
-    private func reloadFetchController() {
-        
-        if fetchedResultsController == nil {
-            fetchedResultsController = NSFetchedResultsController(fetchRequest: createFetchRequest(),
-                                                                  managedObjectContext: context,
-                                                                  sectionNameKeyPath: sectionName,
-                                                                  cacheName: nil)
-            fetchedResultsController?.delegate = self
-            
-        } else if let request = fetchedResultsController?.fetchRequest {
-            updateFetchRequest(request)
-        }
-        
-        do {
-            try fetchedResultsController?.performFetch()
-            DispatchQueue.main.async { [weak self] in
-                self?.delegate?.didReloadContent()
-            }
-            
-        } catch {
-            print(error)
-        }
-    }
-    
-//  MARK - NSFetchedResultsControllerDelegate
+    //  MARK: - NSFetchedResultsControllerDelegate
     
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         delegate?.willUpdateList()
@@ -201,3 +151,55 @@ extension FetchedResultsProvider: FetchedResultsProviderInterface {
     }
 }
 
+private extension FetchedResultsProvider {
+ 
+    func createFetchRequest() -> NSFetchRequest<U.ManagedType> {
+        
+        let name = String(describing: U.ManagedType.self)
+        let fetchRequest = NSFetchRequest<U.ManagedType>(entityName: name)
+        updateFetchRequest(fetchRequest)
+        
+        return fetchRequest
+    }
+    
+    func updateFetchRequest(_ fetchRequest: NSFetchRequest<U.ManagedType>) {
+        
+        NSFetchedResultsController<U.ManagedType>.deleteCache(withName: nil)
+        
+        var predicates = optionalPredicates ?? []
+        predicates.append(mainPredicate)
+        
+        let compound = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+        fetchRequest.predicate = compound
+        fetchRequest.sortDescriptors = sortDescriptors
+        
+        if let limit = fetchLimit {
+            fetchRequest.fetchLimit = limit
+            fetchRequest.fetchBatchSize = fetchRequest.fetchLimit
+        }
+    }
+    
+    func reloadFetchController() {
+        
+        if fetchedResultsController == nil {
+            fetchedResultsController = NSFetchedResultsController(fetchRequest: createFetchRequest(),
+                                                                  managedObjectContext: context,
+                                                                  sectionNameKeyPath: sectionName,
+                                                                  cacheName: nil)
+            fetchedResultsController?.delegate = self
+            
+        } else if let request = fetchedResultsController?.fetchRequest {
+            updateFetchRequest(request)
+        }
+        
+        do {
+            try fetchedResultsController?.performFetch()
+            DispatchQueue.main.async { [weak self] in
+                self?.delegate?.didReloadContent()
+            }
+            
+        } catch {
+            print(error)
+        }
+    }
+}

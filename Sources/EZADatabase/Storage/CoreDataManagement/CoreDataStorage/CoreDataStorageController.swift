@@ -52,10 +52,13 @@ class CoreDataStorageController: NSObject {
         
         persistentContainer = FrameworkPersistentContainer(name: containerName)
         persistentContainer.loadPersistentStores() { (description, error) in
+            
+            self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
+            self.persistentContainer.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
             if let error = error {
-//                Crashlytics.crashlytics().record(error: error)
                 print("Failed to load Core Data stack: \(error)")
             }
+            
             completionClosure?()
         }
         
@@ -63,8 +66,7 @@ class CoreDataStorageController: NSObject {
         //
         backgroundContext = persistentContainer.newBackgroundContext()
         backgroundContext?.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
-        persistentContainer.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        backgroundContext?.automaticallyMergesChangesFromParent = true
     }
 }
 
@@ -73,10 +75,66 @@ class CoreDataStorageController: NSObject {
 
 extension CoreDataStorageController: CoreDataStorageInterface {
     
-    func insert<Type: CoreDataCompatible>(object: Type?) -> Type.ManagedType? {
+    func deleteAllTables(except names: [String], completion: (() -> Void)?) {
+        
+        let context = backgroundContext
+        let allEntitiyNames = persistentContainer.managedObjectModel.entities.compactMap { $0.name }
+        let toBeRemoved = allEntitiyNames.filter { !names.contains($0) }
+        
+        save {
+            do {
+                for name in toBeRemoved {
+                    let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: name)
+                    let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+                    try context?.executeAndMergeChanges(using: deleteRequest)
+                }
+            } catch {
+                print(error)
+            }
+        } completionBlock: {
+            completion?()
+        }
+    }
+    
+    func setValues<Type: CoreDataCompatible>(type: Type.Type, values: [String: Any?], predicate: NSPredicate?, completion: @escaping () -> Void) {
+        
+        let context = backgroundContext
+        
+        let entityName = String(describing: Type.ManagedType.self)
+        let fetchRequest = NSFetchRequest<Type.ManagedType>(entityName: entityName)
+        fetchRequest.predicate = predicate
+        
+        save {
+            let result = context?.safeFetch(fetchRequest)
+            result?.forEach({ (obj) in
+                
+                values.forEach { (key, value) in
+                    
+                    let old = obj.value(forKey: key)
+                    let oldString = String(describing: old)
+                    let newString = String(describing: value)
+                    
+                    if oldString != newString {
+                        obj.setValue(value, forKeyPath: key)
+                    } else {
+                        print("Old: \(oldString), New: \(newString)")
+                    }
+                }
+            })
+        } completionBlock: {
+            completion()
+        }
+    }
+    
+    func findRelation<Type: CoreDataExportable>(predicate: NSPredicate?) -> Type? {
+        let result: Type? = query(predicate: predicate, context: backgroundContext!, sortDescriptors: nil, fetchLimit: 1)?.first
+        return result
+    }
+    
+    func insertSync<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate?) -> Type.ManagedType? {
         
         guard let object = object else { return nil }
-        let predicate = NSPredicate(key: object.primaryKeyName, value: object.primaryKey)
+        let predicate = predicate ?? NSPredicate(key: object.primaryKeyName, value: object.primaryKey)
         return self.insert(object: object, predicate: predicate, context: self.backgroundContext!)
     }
     
@@ -109,15 +167,27 @@ extension CoreDataStorageController: CoreDataStorageInterface {
         }
     }
     
-    func query<Type: CoreDataExportable>(type: Type.Type,
-                                         predicate: NSPredicate?,
-                                         sortDescriptors: [NSSortDescriptor]?,
-                                         fetchLimit: Int?) -> [Type]? {
-        return query(type: type, predicate: predicate, context: viewContext, sortDescriptors: sortDescriptors, fetchLimit: fetchLimit)
+    func insertAsync<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate?, completion: @escaping () -> Void) {
+        
+        guard let object = object else {
+            completion()
+            return
+        }
+        save {
+            let predicate = predicate ?? NSPredicate(key: object.primaryKeyName, value: object.primaryKey)
+            self.insert(object: object, predicate: predicate, context: self.backgroundContext!)
+        } completionBlock: {
+            completion()
+        }
     }
     
-    func asyncQuery<Type: CoreDataExportable>(type: Type.Type,
-                                              predicate: NSPredicate?,
+    func list<Type: CoreDataExportable>(predicate: NSPredicate?,
+                                         sortDescriptors: [NSSortDescriptor]?,
+                                         fetchLimit: Int?) -> [Type]? {
+        return query(predicate: predicate, context: viewContext, sortDescriptors: sortDescriptors, fetchLimit: fetchLimit)
+    }
+    
+    func asyncList<Type: CoreDataExportable>(predicate: NSPredicate?,
                                               sortDescriptors: [NSSortDescriptor]?,
                                               fetchLimit: Int?,
                                               completion: @escaping ([Type]?) -> Void) {
@@ -125,7 +195,7 @@ extension CoreDataStorageController: CoreDataStorageInterface {
         let context = backgroundContext
         
         context?.perform { [weak self] in
-            let result = self?.query(type: type, predicate: predicate, context: context!, sortDescriptors: sortDescriptors, fetchLimit: fetchLimit)
+            let result: [Type]? = self?.query(predicate: predicate, context: context!, sortDescriptors: sortDescriptors, fetchLimit: fetchLimit)
             completion(result)
         }
     }
@@ -139,9 +209,10 @@ extension CoreDataStorageController: CoreDataStorageInterface {
         fetchRequest.predicate = predicate
         
         save {
-            let result = context?.safeFetch(fetchRequest)
-            result?.forEach { (obj) in
-                context?.delete(obj)
+            if let result = context?.safeFetch(fetchRequest), !result.isEmpty {
+                result.forEach { (obj) in
+                    context?.delete(obj)
+                }
             }
         } completionBlock: {
             completion()
@@ -175,10 +246,10 @@ extension CoreDataStorageController: CoreDataStorageInterface {
 
 private extension CoreDataStorageController {
     
-    
     func save(saveBlock: @escaping () -> Void, completionBlock: @escaping () -> Void) {
         
         let context = backgroundContext
+        
         context?.perform { [weak context] in
             saveBlock()
             context?.saveSelfAndParent() {
@@ -192,15 +263,19 @@ private extension CoreDataStorageController {
     @discardableResult
     func insert<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate?, context: NSManagedObjectContext) -> Type.ManagedType? {
         
-        let type = Type.ManagedType.self
-        let entityName = String(describing: type)
-        let result = query(type: type, predicate: predicate, context: context, fetchLimit: 1)?.first ??
-                     NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? Type.ManagedType
+        let entityName = String(describing: Type.ManagedType.self)
+        let result: Type.ManagedType?
+        
+        if let list: [Type.ManagedType] = query(predicate: predicate, context: context, fetchLimit: nil), !list.isEmpty {
+            result = list.first
+        } else {
+            result = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context) as? Type.ManagedType
+        }
         result?.configure(with: object as! Type.ManagedType.ExportType, in: self)
         return result
     }
     
-    func query<Type: NSManagedObject>(type: Type.Type, predicate: NSPredicate?, context: NSManagedObjectContext, sortDescriptors: [NSSortDescriptor]? = nil, fetchLimit: Int? = nil) -> [Type]? {
+    func query<Type: NSManagedObject>(predicate: NSPredicate?, context: NSManagedObjectContext, sortDescriptors: [NSSortDescriptor]? = nil, fetchLimit: Int? = nil) -> [Type]? {
         
         // Fetch entity with appropriate class
         //
@@ -228,18 +303,9 @@ private extension NSManagedObjectContext {
             return try fetch(request)
         }
         catch {
-//            Crashlytics.crashlytics().record(error: error)
             return nil
         }
     }
-    
-    var hasChanges: Bool {
-        
-        let registeredObjects = self.registeredObjects.filter { return $0.changedValues().count > 0 }
-        let updatedObjects = self.updatedObjects.filter { return $0.changedValues().count > 0 }
-        return (updatedObjects.count > 0) || (registeredObjects.count > 0) || !insertedObjects.isEmpty || !deletedObjects.isEmpty
-    }
-    
     func saveContextInstantly() {
         
         // Nothing to save
@@ -264,6 +330,21 @@ private extension NSManagedObjectContext {
         } else {
             completion?()
         }
+    }
+}
+
+private extension NSManagedObjectContext {
+    
+    /// Executes the given `NSBatchDeleteRequest` and directly merges the changes to bring the given managed object context up to date.
+    ///
+    /// - Parameter batchDeleteRequest: The `NSBatchDeleteRequest` to execute.
+    /// - Throws: An error if anything went wrong executing the batch deletion.
+    func executeAndMergeChanges(using batchDeleteRequest: NSBatchDeleteRequest) throws {
+        
+        batchDeleteRequest.resultType = .resultTypeObjectIDs
+        let result = try execute(batchDeleteRequest) as? NSBatchDeleteResult
+        let changes: [AnyHashable: Any] = [NSDeletedObjectsKey: result?.result as? [NSManagedObjectID] ?? []]
+        NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self])
     }
 }
 

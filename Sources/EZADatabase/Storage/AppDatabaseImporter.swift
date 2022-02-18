@@ -28,11 +28,31 @@ public protocol DatabaseWriterProtocol {
     /// Efficiently saves Updatable object list to the database.
     ///
     /// - Parameters:
+    ///   - objectToImport: Object to be imported to database
+    /// - Returns: An empty promise when the work is finished
+    ///
+    @discardableResult
+    static func updateRemote(_ objectToImport: WriteType?, predicate: NSPredicate?) -> Promise<Void>
+    
+    /// Efficiently saves Updatable object list to the database.
+    ///
+    /// - Parameters:
     ///   - objectsToImport: Objects to be imported to database
     /// - Returns: An empty promise when the work is finished
     ///
     @discardableResult
-    static func importRemoteList(_ objectsToImport: [WriteType]) -> Promise<Void>
+    static func importRemoteList(_ objectsToImport: [WriteType?]) -> Promise<Void>
+    
+    /// Efficiently imports particular values for object by predicate and type
+    ///
+    /// - Parameters:
+    ///   - entity: Type of objects in DB (table)
+    ///   - predicate: Predicate for search
+    ///   - values: Values to be updated for found objects
+    /// - Returns: An empty promise when the work is finished
+    ///
+    @discardableResult
+    static func importValues(_ entity: WriteType.Type, predicate: NSPredicate?, values: [String: Any]) -> Promise<Void>
 }
 
 
@@ -47,8 +67,18 @@ public class AppDatabaseImporter<ImportedType: CoreDataCompatible>: DatabaseWrit
     }
     
     @discardableResult
-    public static func importRemoteList(_ objectsToImport: [WriteType]) -> Promise<Void> {
+    public static func updateRemote(_ objectToImport: WriteType?, predicate: NSPredicate?) -> Promise<Void> {
+        return Writer<WriteType>.updateRemote(objectToImport, predicate: predicate)
+    }
+    
+    @discardableResult
+    public static func importRemoteList(_ objectsToImport: [WriteType?]) -> Promise<Void> {
         return Writer<WriteType>.importRemoteList(objectsToImport)
+    }
+    
+    @discardableResult
+    public static func importValues(_ entity: WriteType.Type, predicate: NSPredicate?, values:  [String: Any]) -> Promise<Void> {
+        return Writer<WriteType>.importValues(entity, predicate: predicate, values: values)
     }
 }
 

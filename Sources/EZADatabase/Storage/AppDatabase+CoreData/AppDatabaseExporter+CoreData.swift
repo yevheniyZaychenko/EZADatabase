@@ -21,45 +21,41 @@ extension CoreDataReader: DatabaseReaderProtocol where ExportedType: CoreDataCom
     static func exportRemoteSingle(predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> ReadType? {
         
         let controller = CoreDataStorageController.shared
-        let objects = controller.query(type: ReadType.ManagedType.self,
-                                       predicate: predicate,
-                                       sortDescriptors: sort,
-                                       fetchLimit: 1)
+        let objects: [ReadType.ManagedType]? = controller.list(predicate: predicate,
+                                                                sortDescriptors: sort,
+                                                                fetchLimit: 1)
         
         return objects?.first?.getObject() as? ReadType
     }
     
-    static func exportRemote(_ type: ReadType.Type, predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> Promise<ReadType?> {
+    static func exportRemote(predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> Promise<ReadType?> {
         
         let controller = CoreDataStorageController.shared
         
-        return Promise { seal in
+        return Promise<ReadType?> { seal in
             
-            controller.asyncQuery(type: ReadType.ManagedType.self,
-                                  predicate: predicate,
-                                  sortDescriptors: sort,
-                                  fetchLimit: 1)
-            { result in
+            let completion: (([ReadType.ManagedType]?) -> Void) = { result in
                 
                 let object = result?.first?.getObject() as? ReadType
                 DispatchQueue.main.async {
                     seal.fulfill(object)
                 }
             }
+            controller.asyncList(predicate: predicate,
+                                  sortDescriptors: sort,
+                                  fetchLimit: 1,
+                                  completion: completion)
+            
         }
     }
     
-    static func exportRemoteList(_ type: ReadType.Type, predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> Promise<[ReadType]?> {
+    static func exportRemoteList(predicate: NSPredicate?, sort: [NSSortDescriptor]?) -> Promise<[ReadType]?> {
         
         let controller = CoreDataStorageController.shared
         
-        return Promise { seal in
+        return Promise<[ReadType]?> { seal in
             
-            controller.asyncQuery(type: ReadType.ManagedType.self,
-                                  predicate: predicate,
-                                  sortDescriptors: nil,
-                                  fetchLimit: nil)
-            { result in
+            let completion: (([ReadType.ManagedType]?) -> Void) = { result in
                 
                 let mapped = result?.compactMap { obj in
                     return obj.getObject() as? ReadType
@@ -68,6 +64,11 @@ extension CoreDataReader: DatabaseReaderProtocol where ExportedType: CoreDataCom
                     seal.fulfill(mapped)
                 }
             }
+            
+            controller.asyncList(predicate: predicate,
+                                  sortDescriptors: nil,
+                                  fetchLimit: nil,
+                                  completion: completion)
         }
     }
     

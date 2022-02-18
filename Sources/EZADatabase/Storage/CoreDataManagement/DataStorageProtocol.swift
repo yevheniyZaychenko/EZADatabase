@@ -19,7 +19,7 @@ public protocol CoreDataCompatible {
     ///
     var primaryKey: Any { get }
     
-    /// a primary key for managed object to make internal relationships available
+    /// a primary key name for managed object to make internal relationships available
     ///
     var primaryKeyName: String { get }
     
@@ -52,44 +52,71 @@ public protocol CoreDataExportable: NSManagedObject {
 //
 public protocol CoreDataStorageInterface {
     
-    /// Fetches an objects or crates it if such doesn't exist and 'object' is passed
-    /// This method should be called inside "saveBlock" of "save" method
+    /// Deletes all tables of database excepting a list of passed table names
     /// - Parameters:
-    ///   - objects: A CoreDataCompatible objects list from which a new is to be created/updated
-    ///   - completion: a completion performed on context's thread
+    ///   - names: table names which should be kept after delete
+    ///   - completion: a completion performed on main thread
+    ///
+    func deleteAllTables(except names: [String], completion: (() -> Void)?)
+    
+    /// Sets values to particular objects by NSPredicate
+    /// - Parameters:
+    ///   - type: A CoreDataCompatible objects list from which a new is to be created/updated
+    ///   - values: a key-value dictionary which should be updated
+    ///   - predicate: Predicate for search
+    ///   - completion: a completion performed on main thread
+    ///
+    func setValues<Type: CoreDataCompatible>(type: Type.Type, values: [String: Any?], predicate: NSPredicate?, completion: @escaping () -> Void)
+    
+    /// Synchronously insert a new object or updates existing one
+    /// - Parameters:
+    ///   - object: A CoreDataCompatible object from which a new one is to be created/updated
+    ///   - predicate: Predicate for search
     /// - Returns: NSManagedObjectModel custom object related to Type passed in method
     ///
-    func insert<Type: CoreDataCompatible>(object: Type?) -> Type.ManagedType?
+    func insertSync<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate?) -> Type.ManagedType?
     
-    /// Fetches an objects or crates it if such doesn't exist and 'object' is passed
-    /// This method should be called inside "saveBlock" of "save" method
+    /// Asynchronously inserts a list of new objects or replace existing ones by primary keys
     /// - Parameters:
     ///   - objects: A CoreDataCompatible objects list from which a new is to be created/updated
-    ///   - completion: a completion performed on context's thread
-    /// - Returns: NSManagedObjectModel custom object related to Type passed in method
+    ///   - completion: a completion performed on main thread
     ///
     func insertList<Type: CoreDataCompatible>(objects: [Type?], completion: @escaping () -> Void)
     
+    /// Asynchronously inserts new objector replace existing one by primary key
+    /// - Parameters:
+    ///   - object: A CoreDataCompatible object from which a new one is to be created/updated
+    ///   - predicate: Predicate for search
+    ///   - completion: a completion performed on main thread
+    ///
+    func insertAsync<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate?, completion: @escaping () -> Void)
+    
+    /// Synchronously find an object by predicate or returns nil
+    /// - Parameters:
+    ///   - predicate: a predicate to fetch needed data
+    /// - Returns: a NSManagedObjectModel custom object
+    ///
+    func findRelation<Type: CoreDataExportable>(predicate: NSPredicate?) -> Type?
+    
     /// Fetches a list of objects by passed NSPredicate
     /// - Parameters:
-    ///   - type: CoreDataCompatible object custom type
     ///   - predicate: a predicate to fetch needed data
+    ///   - sortDescriptors: sorting options
+    ///   - fetchLimit: limit of objects to fetch
     /// - Returns: a list of NSManagedObjectModel custom objects
     ///
-    func query<Type: CoreDataExportable>(type: Type.Type,
-                                         predicate: NSPredicate?,
+    func list<Type: CoreDataExportable>(predicate: NSPredicate?,
                                          sortDescriptors: [NSSortDescriptor]?,
                                          fetchLimit: Int?) -> [Type]?
     
     /// Asynchronously Fetches a list of objects by passed NSPredicate
     /// - Parameters:
-    ///   - type: CoreDataCompatible object custom type
     ///   - predicate: a predicate to fetch needed data
-    ///   - completion: a completion performed on context's thread
-    /// - Returns: a list of NSManagedObjectModel custom objects
+    ///   - sortDescriptors: sorting options
+    ///   - fetchLimit: limit of objects to fetch
+    ///   - completion: a completion performed on main thread and contains fetched objects
     ///
-    func asyncQuery<Type: CoreDataExportable>(type: Type.Type,
-                                              predicate: NSPredicate?,
+    func asyncList<Type: CoreDataExportable>(predicate: NSPredicate?,
                                               sortDescriptors: [NSSortDescriptor]?,
                                               fetchLimit: Int?,
                                               completion: @escaping ([Type]?) -> Void)
@@ -129,3 +156,9 @@ public protocol CoreDataStorageInterface {
                                                           fetchLimit: Int?) -> FetchedResultsProviderInterface
 }
 
+extension CoreDataStorageInterface {
+    
+    func insertSync<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate? = nil) -> Type.ManagedType? {
+        return insertSync(object: object, predicate: predicate)
+    }
+}

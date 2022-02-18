@@ -15,12 +15,13 @@ public extension NSPredicate {
     }
     
     convenience init(key: String, value: Any) {
-        self.init(format: "\(key) == %@", value as! CVarArg)
+        let arg = "\(value)"
+        self.init(format: "\(key) == %@", arg)
     }
     
-    convenience init(value: Any) {
-        
-        self.init(format: "id == %@", value as! CVarArg)
+    convenience init(id: Any) {
+        let arg = "\(id)"
+        self.init(format: "id == %@", arg)
     }
     
     static func dateRangePredicate(from: Date, to: Date) -> NSPredicate {
@@ -32,11 +33,13 @@ public extension NSPredicate {
         return datePredicate
     }
     
-    func appending(predicate: NSPredicate, type: CompoundType) -> NSPredicate {
+    func appending(predicate: NSPredicate?, type: CompoundType) -> NSPredicate {
+        
+        guard let toAppend = predicate else { return self }
         
         switch type {
-        case .and: return NSCompoundPredicate(andPredicateWithSubpredicates: [self, predicate])
-        case .or: return NSCompoundPredicate(orPredicateWithSubpredicates: [self, predicate])
+        case .and: return NSCompoundPredicate(andPredicateWithSubpredicates: [self, toAppend])
+        case .or: return NSCompoundPredicate(orPredicateWithSubpredicates: [self, toAppend])
         }
     }
 }

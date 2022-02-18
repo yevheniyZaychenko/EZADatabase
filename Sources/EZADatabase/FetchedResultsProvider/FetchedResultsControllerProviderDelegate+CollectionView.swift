@@ -10,7 +10,7 @@ import UIKit
 
 //MARK: - FetchedResultsProviderDelegate + CollectionView
 
-public protocol CollectionViewFetchedResultsProviderDelegate: FetchedResultsProviderDelegate {
+protocol CollectionViewFetchedResultsProviderDelegate: FetchedResultsProviderDelegate {
     
     var collectionView: UICollectionView! { get }
     var sectionsOperations: [BlockOperation] { get set }
@@ -19,7 +19,7 @@ public protocol CollectionViewFetchedResultsProviderDelegate: FetchedResultsProv
     func didFinishAnimation()
 }
 
-public extension CollectionViewFetchedResultsProviderDelegate {
+extension CollectionViewFetchedResultsProviderDelegate {
     
     var shouldAlwaysReloadData: Bool { return false }
     
@@ -44,17 +44,16 @@ public extension CollectionViewFetchedResultsProviderDelegate {
             return
         }
         
-        UIView.performWithoutAnimation {
-            self.performBatchesForSections()
-            self.performBatchesForItems()
-        }
+        performBatchesForSections()
+        performBatchesForItems()
     }
     
     func moveObject(from indexPath: IndexPath?, to newIndexPath: IndexPath?) {
         
         guard let from = indexPath, let to = newIndexPath else { return }
         addToSectionsOperations(operation: BlockOperation { [weak self] in
-            self?.collectionView.moveItem(at: from, to: to)
+            self?.collectionView.deleteItems(at: [from])
+            self?.collectionView.insertItems(at: [to])
         })
     }
     
