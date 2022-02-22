@@ -15,13 +15,18 @@ public extension NSPredicate {
     }
     
     convenience init(key: String, value: Any) {
-        let arg = "\(value)"
-        self.init(format: "\(key) == %@", arg)
+        
+        if let date = value as? Date {
+            self.init(format: "\(key) == %@", date as CVarArg)
+        } else if let string = value as? String {
+            self.init(format: "\(key) == %@", string)
+        } else {
+            self.init(format: "\(key) == \(value)")
+        }
     }
     
     convenience init(id: Any) {
-        let arg = "\(id)"
-        self.init(format: "id == %@", arg)
+        self.init(key: "id", value: id)
     }
     
     static func dateRangePredicate(from: Date, to: Date) -> NSPredicate {

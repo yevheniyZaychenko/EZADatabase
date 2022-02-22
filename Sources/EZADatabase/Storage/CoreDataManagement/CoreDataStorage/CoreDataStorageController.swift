@@ -53,8 +53,6 @@ class CoreDataStorageController: NSObject {
         persistentContainer = FrameworkPersistentContainer(name: containerName)
         persistentContainer.loadPersistentStores() { (description, error) in
             
-            self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
-            self.persistentContainer.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
             if let error = error {
                 print("Failed to load Core Data stack: \(error)")
             }
@@ -67,6 +65,8 @@ class CoreDataStorageController: NSObject {
         backgroundContext = persistentContainer.newBackgroundContext()
         backgroundContext?.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         backgroundContext?.automaticallyMergesChangesFromParent = true
+        persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
+        persistentContainer.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
     }
 }
 
