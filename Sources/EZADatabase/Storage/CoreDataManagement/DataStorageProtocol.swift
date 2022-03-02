@@ -156,7 +156,7 @@ public protocol CoreDataStorageInterface {
                                                           fetchLimit: Int?) -> FetchedResultsProviderInterface
 }
 
-extension CoreDataStorageInterface {
+public extension CoreDataStorageInterface {
     
     func insertSync<Type: CoreDataCompatible>(object: Type?, predicate: NSPredicate? = nil) -> Type.ManagedType? {
         return insertSync(object: object, predicate: predicate)

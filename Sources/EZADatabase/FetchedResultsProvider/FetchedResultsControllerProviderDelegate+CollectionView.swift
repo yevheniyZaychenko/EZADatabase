@@ -10,7 +10,7 @@ import UIKit
 
 //MARK: - FetchedResultsProviderDelegate + CollectionView
 
-protocol CollectionViewFetchedResultsProviderDelegate: FetchedResultsProviderDelegate {
+public protocol CollectionViewFetchedResultsProviderDelegate: FetchedResultsProviderDelegate {
     
     var collectionView: UICollectionView! { get }
     var sectionsOperations: [BlockOperation] { get set }
@@ -19,7 +19,7 @@ protocol CollectionViewFetchedResultsProviderDelegate: FetchedResultsProviderDel
     func didFinishAnimation()
 }
 
-extension CollectionViewFetchedResultsProviderDelegate {
+public extension CollectionViewFetchedResultsProviderDelegate {
     
     var shouldAlwaysReloadData: Bool { return false }
     

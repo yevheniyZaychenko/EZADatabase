@@ -11,7 +11,7 @@ import UIKit
 
 //MARK: - FetchedResultsProviderDelegate + TableView
 
-protocol TableViewFetchedResultsProviderDelegate: FetchedResultsProviderDelegate {
+public protocol TableViewFetchedResultsProviderDelegate: FetchedResultsProviderDelegate {
     
     var shouldStopScroll: Bool { get }
     var animationType: UITableView.RowAnimation { get }
@@ -20,7 +20,7 @@ protocol TableViewFetchedResultsProviderDelegate: FetchedResultsProviderDelegate
     func didFinishAnimation()
 }
 
-extension TableViewFetchedResultsProviderDelegate {
+public extension TableViewFetchedResultsProviderDelegate {
     
     var shouldStopScroll: Bool {
         return true
@@ -110,7 +110,7 @@ extension TableViewFetchedResultsProviderDelegate {
     }
 }
 
-extension UITableView {
+public extension UITableView {
     
     func addLoadingIndicator() {
         
