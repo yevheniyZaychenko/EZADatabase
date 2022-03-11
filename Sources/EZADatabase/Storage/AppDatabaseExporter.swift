@@ -52,9 +52,29 @@ public protocol DatabaseReaderProtocol {
     @discardableResult
     static func exportRemoteList(predicate: NSPredicate?, sort: [NSSortDescriptor]?)  -> Promise<[ReadType]?>
     
+    /// Efficiently computes an integer value of table's field.
+    ///
+    /// - Parameters:
+    ///   - type: Type of objects
+    ///   - operation: an operation of computation
+    ///   - keyPath: a name of field to compute
+    ///   - predicate: predicate for searching
+    /// - Returns: An integer value of computation
+    ///
     @discardableResult
     static func compute(_ type: ReadType.Type, operation: DatabaseReaderComputationOperation, keyPath: String, predicate: NSPredicate) -> Int?
     
+    /// FetchedResultsProvider object that efficiently adopts database obejcts to appropriate structures
+    ///
+    /// - Parameters:
+    ///   - type: Type of objects
+    ///   - mainPredicate: a main predicate to fetch objects
+    ///   - optionalPredicates: Optional predicates for additional filtering
+    ///   - sorting: Sort descriptors
+    ///   - sectionName: a field for sections
+    ///   - fetchLimit: fetch limit for request
+    /// - Returns: FetchedResultsProviderInterface object
+    ///
     static func fetchedResultsProvider(_ type: ReadType.Type,
                                        mainPredicate: NSPredicate,
                                        optionalPredicates: [NSPredicate]?,
