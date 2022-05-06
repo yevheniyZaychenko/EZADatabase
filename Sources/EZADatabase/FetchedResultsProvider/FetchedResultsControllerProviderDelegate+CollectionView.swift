@@ -58,8 +58,8 @@ public extension CollectionViewFetchedResultsProviderDelegate {
         
         guard let from = indexPath, let to = newIndexPath else { return }
         addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
-            self?.collectionView.moveItem(at: from, to: to)
-//            self?.collectionView.insertItems(at: [to])
+            self?.collectionView.deleteItems(at: [from])
+            self?.collectionView.insertItems(at: [to])
         }, type: .move))
     }
     
@@ -68,7 +68,7 @@ public extension CollectionViewFetchedResultsProviderDelegate {
         let indexPaths = [indexPath].compactMap{ $0 }
         addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
             self?.collectionView.insertItems(at: indexPaths)
-        }, type: .insert))
+        }, type: .insert)
     }
     
     func deleteObject(at indexPath: IndexPath?) {
@@ -76,7 +76,7 @@ public extension CollectionViewFetchedResultsProviderDelegate {
         let indexPaths = [indexPath].compactMap{ $0 }
             addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
             self?.collectionView.deleteItems(at: indexPaths)
-            }, type: .delete))
+            }, type: .delete)
     }
     
     func updateObject(at indexPath: IndexPath?) {
@@ -85,25 +85,25 @@ public extension CollectionViewFetchedResultsProviderDelegate {
         if indexPaths.isEmpty { return }
                 addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
             self?.collectionView.reloadItems(at: indexPaths)
-                }, type: .update))
+                }, type: .update)
     }
     
     func insert(section: Int) {
             addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
             self?.collectionView.insertSections(IndexSet(integer: section))
-            }, type: .insert))
+            }, type: .insert)
     }
     
     func delete(section: Int) {
                 addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
             self?.collectionView.deleteSections(IndexSet(integer: section))
-                }, type: .delete))
+                }, type: .delete)
     }
     
     func update(section: Int) {
                     addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
             self?.collectionView.reloadSections(IndexSet(integer: section))
-                    }, type: .update))
+                    }, type: .update)
     }
     
     private func addToOperations(operation: ProviderOperation) {
@@ -113,12 +113,7 @@ public extension CollectionViewFetchedResultsProviderDelegate {
     private func performBatchesOperations() {
         
         if operations.isEmpty { return }
-        let filtered = operations.filter { $0.type == .update }
                         
-        if filtered.count == operations.count {
-            didFinishAnimation()
-            return
-        }
         self.collectionView.performBatchUpdates({[weak self] () -> Void in
             self?.operations.forEach { $0.operation.start() }
         }, completion: {[weak self] (finished) -> Void in
