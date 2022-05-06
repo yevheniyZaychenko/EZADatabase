@@ -58,8 +58,8 @@ public extension CollectionViewFetchedResultsProviderDelegate {
         
         guard let from = indexPath, let to = newIndexPath else { return }
         addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
-            self?.collectionView.deleteItems(at: [from])
-            self?.collectionView.insertItems(at: [to])
+            self?.collectionView.moveItem(at: from, to: to)
+//            self?.collectionView.insertItems(at: [to])
         }, type: .move))
     }
     
@@ -102,8 +102,7 @@ public extension CollectionViewFetchedResultsProviderDelegate {
     
     func update(section: Int) {
                     addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
-                        self?.collectionView.deleteSections(IndexSet(integer: section))
-                        self?.collectionView.insertSections(IndexSet(integer: section))
+            self?.collectionView.reloadSections(IndexSet(integer: section))
                     }, type: .update))
     }
     
