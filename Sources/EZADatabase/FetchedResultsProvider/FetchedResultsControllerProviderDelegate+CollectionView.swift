@@ -13,8 +13,7 @@ import UIKit
 public protocol CollectionViewFetchedResultsProviderDelegate: FetchedResultsProviderDelegate {
     
     var collectionView: UICollectionView! { get }
-    var sectionsOperations: [BlockOperation] { get set }
-    var itemsOserations: [BlockOperation] { get set }
+    var operations: [BlockOperation] { get set }
     var shouldAlwaysReloadData: Bool { get }
     func didFinishAnimation()
 }
@@ -39,19 +38,17 @@ public extension CollectionViewFetchedResultsProviderDelegate {
         
         if shouldAlwaysReloadData || collectionView.window == nil || UIApplication.shared.applicationState != .active {
             collectionView.reloadData()
-            sectionsOperations.removeAll()
-            itemsOserations.removeAll()
+            operations.removeAll()
             return
         }
         
-        performBatchesForSections()
-        performBatchesForItems()
+        performBatchesOperations()
     }
     
     func moveObject(from indexPath: IndexPath?, to newIndexPath: IndexPath?) {
         
         guard let from = indexPath, let to = newIndexPath else { return }
-        addToSectionsOperations(operation: BlockOperation { [weak self] in
+        addToOperations(operation: BlockOperation { [weak self] in
             self?.collectionView.deleteItems(at: [from])
             self?.collectionView.insertItems(at: [to])
         })
@@ -60,7 +57,7 @@ public extension CollectionViewFetchedResultsProviderDelegate {
     func insertObject(at indexPath: IndexPath?) {
         
         let indexPaths = [indexPath].compactMap{ $0 }
-        addToSectionsOperations(operation: BlockOperation { [weak self] in
+        addToOperations(operation: BlockOperation { [weak self] in
             self?.collectionView.insertItems(at: indexPaths)
         })
     }
@@ -68,7 +65,7 @@ public extension CollectionViewFetchedResultsProviderDelegate {
     func deleteObject(at indexPath: IndexPath?) {
         
         let indexPaths = [indexPath].compactMap{ $0 }
-        addToSectionsOperations(operation: BlockOperation { [weak self] in
+        addToOperations(operation: BlockOperation { [weak self] in
             self?.collectionView.deleteItems(at: indexPaths)
         })
     }
@@ -77,59 +74,44 @@ public extension CollectionViewFetchedResultsProviderDelegate {
         
         let indexPaths = [indexPath].compactMap{ $0 }
         if indexPaths.isEmpty { return }
-        addToSectionsOperations(operation: BlockOperation { [weak self] in
+        addToOperations(operation: BlockOperation { [weak self] in
             self?.collectionView.reloadItems(at: indexPaths)
         })
     }
     
     func insert(section: Int) {
-        addToSectionsOperations(operation: BlockOperation { [weak self] in
+        addToOperations(operation: BlockOperation { [weak self] in
             self?.collectionView.insertSections(IndexSet(integer: section))
         })
     }
     
     func delete(section: Int) {
-        addToSectionsOperations(operation: BlockOperation { [weak self] in
+        addToOperations(operation: BlockOperation { [weak self] in
             self?.collectionView.deleteSections(IndexSet(integer: section))
         })
     }
     
     func update(section: Int) {
-        addToSectionsOperations(operation: BlockOperation { [weak self] in
+        addToOperations(operation: BlockOperation { [weak self] in
             self?.collectionView.reloadSections(IndexSet(integer: section))
         })
     }
     
-    private func addToItemsOperations(operation: BlockOperation) {
-        itemsOserations.append(operation)
+    private func addToOperations(operation: BlockOperation) {
+        operations.append(operation)
     }
     
-    private func addToSectionsOperations(operation: BlockOperation) {
-        sectionsOperations.append(operation)
-    }
-    
-    private func performBatchesForItems() {
+    private func performBatchesOperations() {
         
-        if itemsOserations.isEmpty { return }
+        if operations.isEmpty { return }
 
         self.collectionView.performBatchUpdates({[weak self] () -> Void in
-            self?.itemsOserations.forEach { $0.start() }
+            self?.operations.forEach { $0.start() }
         }, completion: {[weak self] (finished) -> Void in
-            self?.itemsOserations.removeAll()
+            self?.operations.removeAll()
             DispatchQueue.main.async {
                 self?.didFinishAnimation()
             }
-        })
-    }
-    
-    private func performBatchesForSections() {
-        
-        if sectionsOperations.isEmpty { return }
-
-        self.collectionView.performBatchUpdates({[weak self] () -> Void in
-            self?.sectionsOperations.forEach { $0.start() }
-        }, completion: {[weak self] (finished) -> Void in
-            self?.sectionsOperations.removeAll()
         })
     }
 }
