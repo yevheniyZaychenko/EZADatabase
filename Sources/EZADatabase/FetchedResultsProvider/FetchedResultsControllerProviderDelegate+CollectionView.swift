@@ -102,7 +102,8 @@ public extension CollectionViewFetchedResultsProviderDelegate {
     
     func update(section: Int) {
                     addToOperations(operation: ProviderOperation(operation: BlockOperation { [weak self] in
-            self?.collectionView.reloadSections(IndexSet(integer: section))
+                        self?.collectionView.deleteSections(IndexSet(integer: section))
+                        self?.collectionView.insertSections(IndexSet(integer: section))
                     }, type: .update))
     }
     
