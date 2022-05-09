@@ -22,7 +22,7 @@ pod 'EZADatabase'
 
 ## Author
 
-Eugeniy Zaychenko, ezaychenko@reinvently.com
+Eugeniy Zaychenko, yevheniy.zaychenko@gmail.com
 
 ## License
 
