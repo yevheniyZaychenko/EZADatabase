@@ -1,0 +1,22 @@
+{
+  "name": "EZADatabase",
+  "version": "0.1.0",
+  "summary": "A short description of EZADatabase.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/Eugeniy Zaychenko/EZADatabase",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "Eugeniy Zaychenko": "ezaychenko@reinvently.com"
+  },
+  "source": {
+    "git": "https://github.com/Eugeniy Zaychenko/EZADatabase.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "source_files": "EZADatabase/Classes/**/*"
+}
