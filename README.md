@@ -1,6 +1,6 @@
 # EZADatabase
 
-[![CI Status](https://img.shields.io/travis/yevheniyZaychenko/EZADatabase.svg?style=flat)](https://travis-ci.org/yevheniyZaychenko/EZADatabase)
+[![CI Status](https://img.shields.io/travis/Eugeniy Zaychenko/EZADatabase.svg?style=flat)](https://travis-ci.org/Eugeniy Zaychenko/EZADatabase)
 [![Version](https://img.shields.io/cocoapods/v/EZADatabase.svg?style=flat)](https://cocoapods.org/pods/EZADatabase)
 [![License](https://img.shields.io/cocoapods/l/EZADatabase.svg?style=flat)](https://cocoapods.org/pods/EZADatabase)
 [![Platform](https://img.shields.io/cocoapods/p/EZADatabase.svg?style=flat)](https://cocoapods.org/pods/EZADatabase)
